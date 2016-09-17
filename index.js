@@ -1,4 +1,6 @@
 var path = require('path');
+var AliasPlugin = require('enhanced-resolve/lib/AliasPlugin');
+var ModulesInRootPlugin = require('enhanced-resolve/lib/ModulesInRootPlugin');
 
 function MeteorImportsPlugin(config) {
   config.exclude = [
@@ -50,12 +52,23 @@ MeteorImportsPlugin.prototype.apply = function(compiler) {
     // Create an alias so we can do the context properly using the folder
     // variable from the meteor config file. If we inject the folder variable
     // directly in the request.context webpack goes wild.
-    compiler.options.resolve.alias['meteor-build'] = meteorBuild;
-    compiler.options.resolve.alias['meteor-packages'] = meteorPackages;
+    compiler.resolvers.normal.apply(new AliasPlugin('described-resolve', {
+      name: 'meteor-build',
+      alias: meteorBuild,
+    }, 'resolve'));
+    compiler.resolvers.context.apply(new AliasPlugin('described-resolve', {
+      name: 'meteor-packages',
+      alias: meteorPackages,
+      onlyModule: false,
+    }, 'resolve'));
 
     // Create an alias for the meteor-imports require.
-    compiler.options.resolve.alias['meteor-imports'] = path.join(
-      __dirname, './meteor-imports.js');
+    compiler.resolvers.normal.apply(new AliasPlugin('described-resolve', {
+      name: 'meteor-imports',
+      alias: path.join(__dirname, './meteor-imports.js'),
+    }, 'resolve'));
+
+    compiler.resolvers.loader.apply(new ModulesInRootPlugin('module', meteorNodeModules, 'resolve'));
 
     // Add a loader to inject the meteor config in the meteor-imports require.
     compiler.options.module.loaders.push({
@@ -71,17 +84,6 @@ MeteorImportsPlugin.prototype.apply = function(compiler) {
       loader: 'imports?this=>window'
     });
 
-    // Add a resolveLoader to use the loaders from this plugin's own NPM
-    // dependencies.
-    if (compiler.options.resolveLoader.modulesDirectories.indexOf(meteorNodeModules) < 0) {
-      compiler.options.resolveLoader.modulesDirectories.push(meteorNodeModules);
-    }
-
-    // Add Meteor packages like if they were NPM packages.
-    if (compiler.options.resolve.modulesDirectories.indexOf(meteorPackages) < 0) {
-      compiler.options.resolve.modulesDirectories.push(meteorPackages);
-    }
-
     // Create an alias for each Meteor packages and a loader to extract its
     // globals.
     var excluded = new RegExp(self.config.exclude
@@ -92,8 +94,10 @@ MeteorImportsPlugin.prototype.apply = function(compiler) {
       if (!excluded.test(pckge.path)) {
         var packageName = /^packages\/(.+)\.js$/.exec(pckge.path)[1];
         packageName = packageName.replace('_', ':');
-        compiler.options.resolve.alias['meteor/' + packageName] =
-          meteorBuild + '/' + pckge.path;
+        compiler.resolvers.normal.apply(new AliasPlugin('described-resolve', {
+          name: 'meteor/' + packageName,
+          alias: path.join(meteorBuild, pckge.path),
+        }, 'resolve'));
         compiler.options.module.loaders.push({
           meteorImports: true,
           test: new RegExp('.meteor/local/build/programs/web.browser/' + pckge.path),
@@ -101,7 +105,6 @@ MeteorImportsPlugin.prototype.apply = function(compiler) {
         })
       }
     });
-
   });
 
   // Don't create modules and chunks for excluded packages.
