@@ -89,10 +89,9 @@ MeteorImportsPlugin.prototype.apply = function(compiler) {
       .concat('^app\/.+.js$')
       .join('|'));
     manifest.forEach(function(pckge){
-      if (!excluded.test(pckge.path)) {
+      if (excluded.test(pckge.path)) {
         return;
       }
-
       var location = /^packages\/(.+)\.js$/.exec(pckge.path);
 
       if (!location) {
@@ -101,10 +100,8 @@ MeteorImportsPlugin.prototype.apply = function(compiler) {
 
       var packageName = location[1];
       packageName = packageName.replace('_', ':');
-      compiler.resolvers.normal.apply(new AliasPlugin('described-resolve', {
-        name: 'meteor/' + packageName,
-        alias: path.join(meteorBuild, pckge.path),
-      }, 'resolve'));
+      compiler.options.resolve.alias['meteor/' + packageName] =
+        meteorBuild + '/' + pckge.path;
       compiler.options.module.loaders.push({
         meteorImports: true,
         test: new RegExp('.meteor/local/build/programs/web.browser/' + pckge.path),
