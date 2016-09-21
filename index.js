@@ -90,16 +90,26 @@ MeteorImportsPlugin.prototype.apply = function(compiler) {
       .join('|'));
     manifest.forEach(function(pckge){
       if (!excluded.test(pckge.path)) {
-        var packageName = /^packages\/(.+)\.js$/.exec(pckge.path)[1];
-        packageName = packageName.replace('_', ':');
-        compiler.options.resolve.alias['meteor/' + packageName] =
-          meteorBuild + '/' + pckge.path;
-        compiler.options.module.loaders.push({
-          meteorImports: true,
-          test: new RegExp('.meteor/local/build/programs/web.browser/' + pckge.path),
-          loader: 'exports?Package["' + packageName + '"]'
-        })
+        return;
       }
+
+      var location = /^packages\/(.+)\.js$/.exec(pckge.path);
+
+      if (!location) {
+        return;
+      }
+
+      var packageName = location[1];
+      packageName = packageName.replace('_', ':');
+      compiler.resolvers.normal.apply(new AliasPlugin('described-resolve', {
+        name: 'meteor/' + packageName,
+        alias: path.join(meteorBuild, pckge.path),
+      }, 'resolve'));
+      compiler.options.module.loaders.push({
+        meteorImports: true,
+        test: new RegExp('.meteor/local/build/programs/web.browser/' + pckge.path),
+        loader: 'exports?Package["' + packageName + '"]'
+      })
     });
 
   });
