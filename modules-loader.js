@@ -1,4 +1,4 @@
-var reRequire = /([^\w])require([^\w])/g;
+var reRequire = /([^\w.])require([^\w])/g;
 var reNpmModules = /^\/+$\s+\/\/\s*\/\/\s*\/\/\s*node_modules\/(?!meteor[\/-])([^\s]*)\.js[\s\/]*?^\/+$(.|\s)*?^\/+$/gm;
 
 module.exports = function (source) {
