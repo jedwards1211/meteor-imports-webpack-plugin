@@ -3,6 +3,11 @@ var config = require('./meteor-config');
 
 if (config.injectMeteorRuntimeConfig !== false) window.__meteor_runtime_config__ = config;
 
+if (!config.DDP_DEFAULT_CONNECTION_URL) {
+  var port = config.DDP_DEFAULT_CONNECTION_PORT || 3000;
+  config.DDP_DEFAULT_CONNECTION_URL = location.protocol + '//' + location.hostname + ':' + port;
+}
+
 // Create context to create a chunk for each Meteor package.
 var req = require.context('meteor-packages', true, /\.(js|css)$/);
 
