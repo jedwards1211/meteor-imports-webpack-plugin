@@ -1,12 +1,9 @@
 {
   "name": "meteor-imports-webpack-plugin",
-  "version": "1.1.1",
+  "version": "2.0.3",
   "description": "Webpack plugin to import and use Meteor packages like if they were real NPM packages.",
   "main": "index.js",
-  "scripts": {
-    "lint": "eslint *.js",
-    "prepublish": "npm run lint"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/luisherranz/meteor-imports-webpack-plugin.git"
@@ -26,13 +23,15 @@
     "url": "https://github.com/luisherranz/meteor-imports-webpack-plugin/issues"
   },
   "homepage": "https://github.com/luisherranz/meteor-imports-webpack-plugin#readme",
+  "peerDependencies": {
+    "webpack": "^2.0.0"
+  },
   "dependencies": {
+    "css-loader": "^0.28.0",
+    "enhanced-resolve": "^2.3.0",
     "exports-loader": "^0.6.3",
     "imports-loader": "^0.6.5",
-    "json-loader": "^0.5.4",
-    "json-string-loader": "^1.0.0"
-  },
-  "devDependencies": {
-    "eslint": "^3.7.0"
+    "json-string-loader": "^1.1.0",
+    "style-loader": "^0.16.1"
   }
 }
