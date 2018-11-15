@@ -119,7 +119,7 @@ MeteorImportsPlugin.prototype.apply = function(compiler) {
       {
         meteorImports: true,
         test: new RegExp('.meteor/local/build/programs/web.browser/packages'),
-        loader: 'imports?this=>window',
+        loader: 'imports-loader?this=>window',
       },
       {
         meteorImports: true,
@@ -140,7 +140,7 @@ MeteorImportsPlugin.prototype.apply = function(compiler) {
         extraRules.push({
           meteorImports: true,
           test: new RegExp('.meteor/local/build/programs/web.browser/' + pckge.path),
-          loader: 'exports?Package["' + packageName + '"]',
+          loader: 'exports-loader?Package["' + packageName + '"]',
         })
       }
     });
